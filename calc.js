@@ -5,10 +5,10 @@ const defRates = {
   USDEUR: 0.852
 };
 
-let currentCountry = 'china'; // china | korea
+let currentCountry = 'china';
 let lastTotalCostUSD = 0;
 
-// ---------- страна и валюта ----------
+// ---------- страна ----------
 function updateCountryUI(country) {
   currentCountry = country;
   document.getElementById('btnChina').classList.toggle('active', country === 'china');
@@ -16,22 +16,19 @@ function updateCountryUI(country) {
   document.getElementById('currencyLabel').textContent = country === 'china' ? 'юань' : 'вона';
   document.getElementById('calcForm').currency.value = country === 'china' ? 'CNY' : 'KRW';
 }
-
 document.getElementById('btnChina').onclick = () => updateCountryUI('china');
 document.getElementById('btnKorea').onclick = () => updateCountryUI('korea');
 
-// ---------- таможенная пошлина (физлицо, €) ----------
+// ---------- пошлина ----------
 function calcDutyEUR(age, volume, engine, privilege) {
-  // до 31.12.2025 гибрид и электро — 0
-  if (engine === 'electro' || engine === 'gibrid') return 0;
-
+  if (engine === 'electro' || engine === 'gibrid') return 0; // до 31.12.2025
   let rate;
   if (age < 3) rate = 2.5;
   else if (age <= 5) {
     if (volume <= 1000) rate = 1.5;
     else if (volume <= 1500) rate = 1.7;
     else if (volume <= 1800) rate = 2.5;
-    else if (volume <= 2300) rate = 2.7;   // ← 2 200 см³ здесь
+    else if (volume <= 2300) rate = 2.7;
     else if (volume <= 3000) rate = 3.0;
     else rate = 3.6;
   } else {
@@ -48,9 +45,10 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(e.target));
 
-const USDCNY = parseFloat(document.getElementById('rateUSDCNY')?.value) || defRates.USDCNY;
-const USDKRW = parseFloat(document.getElementById('rateUSDKRW')?.value) || defRates.USDKRW;
-const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value) || defRates.USDEUR;
+  // курсы (безопасное чтение)
+  const USDCNY = parseFloat(document.getElementById('rateUSDCNY')?.value || defRates.USDCNY);
+  const USDKRW = parseFloat(document.getElementById('rateUSDKRW')?.value || defRates.USDKRW);
+  const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
 
   const age = 2025 - Number(d.year);
   const volume = Number(d.volume);
@@ -67,7 +65,7 @@ const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value) || defRa
   const deliveryUSD = currentCountry === 'china' ? 4460 : 4350;
   const deliveryEUR = deliveryUSD * USDEUR;
 
-  // таможенная пошлина (€ → USD)
+  // пошлина
   const dutyEUR = calcDutyEUR(age, volume, engine, privilege);
   const dutyUSD = dutyEUR / USDEUR;
 
@@ -85,13 +83,13 @@ const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value) || defRa
   const broker = 300;
   const storage = 200;
   const insurance = priceEUR * 0.003;
-  const extraUSD = (broker + storage + insurance) / USDEUR; // перевели в USD
+  const extraUSD = (broker + storage + insurance) / USDEUR;
 
   // прогноз полной цены
   const fullCostUSD = totalCostUSD + utilUSD + customsFeeUSD + extraUSD;
   const fullCostEUR = fullCostUSD * USDEUR;
 
-  window.lastTotalCostUSD = totalCostUSD; // для маржи
+  window.lastTotalCostUSD = totalCostUSD;
 
   const box = document.getElementById('resultBox');
   const res = document.getElementById('result');
