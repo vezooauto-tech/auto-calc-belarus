@@ -1,12 +1,12 @@
-// Курсы по умолчанию (Myfin.by, продажа банков, 04.10.2025)
+// Курсы по умолчанию (можно менять в браузере)
 const defRates = {
   USDCNY: 7.27,
   USDKRW: 1975,
-  USDEUR: 0.918
+  USDEUR: 0.852
 };
 
 let currentCountry = 'china'; // china | korea
-let lastTotalCostUSD = 0;     // сохраняем для маржи
+let lastTotalCostUSD = 0;
 
 // ---------- страна и валюта ----------
 function updateCountryUI(country) {
@@ -31,7 +31,7 @@ function calcDutyEUR(age, volume, engine, privilege) {
     if (volume <= 1000) rate = 1.5;
     else if (volume <= 1500) rate = 1.7;
     else if (volume <= 1800) rate = 2.5;
-    else if (volume <= 2300) rate = 2.7;
+    else if (volume <= 2300) rate = 2.7;   // ← 2 200 см³ здесь
     else if (volume <= 3000) rate = 3.0;
     else rate = 3.6;
   } else {
@@ -48,7 +48,6 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(e.target));
 
-  // курсы из полей (ручные)
   const USDCNY = parseFloat(document.getElementById('rateUSDCNY').value) || defRates.USDCNY;
   const USDKRW = parseFloat(document.getElementById('rateUSDKRW').value) || defRates.USDKRW;
   const USDEUR = parseFloat(document.getElementById('rateUSDEUR').value) || defRates.USDEUR;
@@ -56,7 +55,7 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const age = 2025 - Number(d.year);
   const volume = Number(d.volume);
   const priceLocal = Number(d.priceLocal);
-  const currency = d.currency; // CNY / KRW
+  const currency = d.currency;
   const engine = d.engineType;
   const privilege = d.privilege;
 
@@ -68,11 +67,11 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const deliveryUSD = currentCountry === 'china' ? 4460 : 4350;
   const deliveryEUR = deliveryUSD * USDEUR;
 
-  // таможенная пошлина (€)
+  // таможенная пошлина (€ → USD)
   const dutyEUR = calcDutyEUR(age, volume, engine, privilege);
   const dutyUSD = dutyEUR / USDEUR;
 
-  // утилизация и прочее
+  // утилизация и сборы
   const utilEUR = age <= 3 ? 178 : 357;
   const utilUSD = utilEUR / USDEUR;
   const customsFeeEUR = 120;
@@ -82,14 +81,24 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const totalCostUSD = priceUSD + deliveryUSD + dutyUSD;
   const totalCostEUR = totalCostUSD * USDEUR;
 
-  // сохраним для маржи
-  window.lastTotalCostUSD = totalCostUSD;
+  // доп расходы
+  const broker = 300;
+  const storage = 200;
+  const insurance = priceEUR * 0.003;
+  const extraUSD = (broker + storage + insurance) / USDEUR; // перевели в USD
 
-  // вывод
+  // прогноз полной цены
+  const fullCostUSD = totalCostUSD + utilUSD + customsFeeUSD + extraUSD;
+  const fullCostEUR = fullCostUSD * USDEUR;
+
+  window.lastTotalCostUSD = totalCostUSD; // для маржи
+
+  const box = document.getElementById('resultBox');
   const res = document.getElementById('result');
   res.innerHTML = `
     <div><strong>Название и цвет:</strong> ${d.name}</div>
     <div><strong>Ссылка:</strong> <a href="${d.autoURL}" target="_blank" class="text-blue-600 underline">открыть</a></div>
+    <div><strong>Комментарий:</strong> ${d.comment || '—'}</div>
     <div><strong>Год:</strong> ${d.year} (возраст ${age} лет)</div>
     <div><strong>Объём:</strong> ${volume} см³</div>
     <div><strong>Тип:</strong> ${engine}</div>
@@ -98,24 +107,35 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
 
     <div class="mt-4"><strong>Итоговая стоимость</strong> (авто + доставка + пошлина)</div>
     <div>$${totalCostUSD.toFixed(2)} / €${totalCostEUR.toFixed(2)}</div>
+
+    <div class="mt-4"><strong>Прогноз полной цены</strong> (включая все расходы)</div>
+    <div>$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>
+    <details class="mt-2 text-xs">
+      <summary class="cursor-pointer">Расшифровка расходов</summary>
+      <ul class="list-disc ml-5 mt-1">
+        <li>Утилизационный сбор: $${utilUSD.toFixed(2)}</li>
+        <li>Таможенный сбор: $${customsFeeUSD.toFixed(2)}</li>
+        <li>Брокер: $${broker.toFixed(2)}</li>
+        <li>СВХ: $${storage.toFixed(2)}</li>
+        <li>Страховка: $${(insurance / USDEUR).toFixed(2)}</li>
+      </ul>
+    </details>
   `;
-  document.getElementById('resultBox').classList.remove('hidden');
+  box.classList.remove('hidden');
 });
 
-// ---------- маржа ----------
 document.getElementById('calcMarginBtn').addEventListener('click', function () {
   const clientUSD = Number(document.getElementById('clientPriceInput').value);
   const margin = clientUSD - window.lastTotalCostUSD;
   document.getElementById('marginResult').textContent = `Маржа: $${margin.toFixed(2)}`;
-  // отправка в Google Sheets
   sendToGoogleSheets({...Object.fromEntries(new FormData(document.getElementById('calcForm'))), totalCostUSD: window.lastTotalCostUSD, clientPrice: clientUSD, margin});
 });
 
 // ---------- Google Sheets ----------
 function sendToGoogleSheets(data) {
   const sheetURL = currentCountry === 'china'
-    ? 'https://script.google.com/macros/s/AKfycb.../exec' // ← вставь свой
-    : 'https://script.google.com/macros/s/AKfycb.../exec'; // ← вставь свой
+    ? 'https://script.google.com/macros/s/AKfycb.../exec' // ← вставь свой Китай
+    : 'https://script.google.com/macros/s/AKfycb.../exec'; // ← вставь свой Корея
   fetch(sheetURL, {
     method: 'POST',
     body: JSON.stringify(data),
