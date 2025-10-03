@@ -48,9 +48,9 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(e.target));
 
-  const USDCNY = parseFloat(document.getElementById('rateUSDCNY').value) || defRates.USDCNY;
-  const USDKRW = parseFloat(document.getElementById('rateUSDKRW').value) || defRates.USDKRW;
-  const USDEUR = parseFloat(document.getElementById('rateUSDEUR').value) || defRates.USDEUR;
+const USDCNY = parseFloat(document.getElementById('rateUSDCNY')?.value) || defRates.USDCNY;
+const USDKRW = parseFloat(document.getElementById('rateUSDKRW')?.value) || defRates.USDKRW;
+const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value) || defRates.USDEUR;
 
   const age = 2025 - Number(d.year);
   const volume = Number(d.volume);
