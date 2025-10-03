@@ -16,13 +16,13 @@
       <button id="btnKorea" class="country-btn">Корея</button>
     </div>
 
-    <!-- Блок редактируемых курсов -->
+    <!-- Редактируемые курсы -->
     <details class="mb-6 bg-white rounded-xl shadow p-4">
       <summary class="cursor-pointer font-semibold">Курсы валют (можно изменить)</summary>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <label>USD → CNY <input id="rateUSDCNY" type="number" value="7.27" class="input w-full"></label>
         <label>USD → KRW <input id="rateUSDKRW" type="number" value="1975" class="input w-full"></label>
-        <label>USD → EUR <input id="rateUSDEUR" type="number" value="0.918" class="input w-full"></label>
+        <label>USD → EUR <input id="rateUSDEUR" type="number" value="0.852" class="input w-full"></label>
       </div>
     </details>
 
@@ -49,6 +49,9 @@
         </label>
       </div>
       <label>Ссылка на авто <input name="autoURL" type="url" required class="input" placeholder="https://..."></label>
+      <label>Комментарий (необязательно)
+        <textarea name="comment" class="input" rows="2" placeholder="Состояние, опции, примечания"></textarea>
+      </label>
       <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Рассчитать</button>
     </form>
 
@@ -72,5 +75,4 @@
     .country-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
   </style>
   <script src="calc.js"></script>
-</body>
 </html>
