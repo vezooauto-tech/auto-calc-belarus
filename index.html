@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор авто из Китая и Кореи</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">Калькулятор стоимости авто для физлица (Беларусь)</h1>
+
+    <!-- Выбор страны -->
+    <div class="flex justify-center gap-4 mb-6">
+      <button id="btnChina" class="country-btn active">Китай</button>
+      <button id="btnKorea" class="country-btn">Корея</button>
+    </div>
+
+    <!-- Блок редактируемых курсов -->
+    <details class="mb-6 bg-white rounded-xl shadow p-4">
+      <summary class="cursor-pointer font-semibold">Курсы валют (можно изменить)</summary>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <label>USD → CNY <input id="rateUSDCNY" type="number" value="7.27" class="input w-full"></label>
+        <label>USD → KRW <input id="rateUSDKRW" type="number" value="1975" class="input w-full"></label>
+        <label>USD → EUR <input id="rateUSDEUR" type="number" value="0.918" class="input w-full"></label>
+      </div>
+    </details>
+
+    <!-- Форма -->
+    <form id="calcForm" class="bg-white rounded-xl shadow p-6 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label>Название и цвет авто <input name="name" required class="input" placeholder="Toyota Camry, белый"></label>
+        <label>Год <input type="number" name="year" required class="input"></label>
+        <label>Цена (<span id="currencyLabel">юань</span>) <input type="number" name="priceLocal" required class="input"></label>
+        <label>Объём (см³) <input type="number" name="volume" required class="input"></label>
+        <label>Тип двигателя
+          <select name="engineType" class="input">
+            <option value="benzin">Бензин</option>
+            <option value="dizel">Дизель</option>
+            <option value="gibrid">Гибрид</option>
+            <option value="electro">Электро</option>
+          </select>
+        </label>
+        <label>Льгота
+          <select name="privilege" class="input">
+            <option value="no">Нет</option>
+            <option value="yes">Да</option>
+          </select>
+        </label>
+      </div>
+      <label>Ссылка на авто <input name="autoURL" type="url" required class="input" placeholder="https://..."></label>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Рассчитать</button>
+    </form>
+
+    <!-- Результат -->
+    <div id="resultBox" class="mt-6 hidden bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold mb-4">Итоговая стоимость</h2>
+      <div id="result" class="space-y-2 text-sm"></div>
+
+      <!-- Цена клиента -->
+      <div class="mt-6">
+        <label>Цена для клиента (USD): <input type="number" id="clientPriceInput" class="input w-48"></label>
+        <button id="calcMarginBtn" class="ml-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Посчитать маржу</button>
+        <div id="marginResult" class="mt-2 font-semibold"></div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.375rem; }
+    .country-btn { padding: 0.5rem 1.5rem; border: 1px solid #ccc; border-radius: 0.375rem; background: white; cursor: pointer; }
+    .country-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+  </style>
+  <script src="calc.js"></script>
+</body>
+</html>
