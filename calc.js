@@ -162,7 +162,7 @@ document.getElementById('calcMarginBtn').addEventListener('click', function () {
     lastData.margin = margin;
     // обновляем прогноз полной цены
     const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
-    const extraTotalUSD = (357 / USDEUR) + (120 / USDEUR) + (300 / USDEUR) + (200 / USDEUR) + (lastData.priceEUR * 0.003 / USDEUR);
+   const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD;
     const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : lastFullCostUSD;
     const fullCostEUR = fullCostUSD * USDEUR;
     document.getElementById('fullPriceBlock').innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
