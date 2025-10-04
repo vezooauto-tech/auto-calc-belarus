@@ -21,7 +21,7 @@ document.getElementById('btnKorea').onclick = () => updateCountryUI('korea');
 
 // ---------- пошлина ----------
 function calcDutyEUR(age, volume, engine, privilege) {
-  if (engine === 'electro' || engine === 'gibrid') return 0; // до 31.12.2025
+  if (engine === 'electro' || engine === 'gibrid') return 0;
   let rate;
   if (age < 3) rate = 2.5;
   else if (age <= 5) {
@@ -40,12 +40,11 @@ function calcDutyEUR(age, volume, engine, privilege) {
   return privilege === 'yes' ? duty / 2 : duty;
 }
 
-// ---------- основной расчёт ----------
+// ---------- основной расчёт + ОТЛАДКА ----------
 document.getElementById('calcForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(e.target));
 
-  // курсы (безопасное чтение)
   const USDCNY = parseFloat(document.getElementById('rateUSDCNY')?.value || defRates.USDCNY);
   const USDKRW = parseFloat(document.getElementById('rateUSDKRW')?.value || defRates.USDKRW);
   const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
@@ -89,8 +88,9 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const fullCostUSD = totalCostUSD + utilUSD + customsFeeUSD + extraUSD;
   const fullCostEUR = fullCostUSD * USDEUR;
 
-  window.lastTotalCostUSD = totalCostUSD;
+  lastTotalCostUSD = totalCostUSD;
 
+  // ОТЛАДКА: выводим всё на экран
   const box = document.getElementById('resultBox');
   const res = document.getElementById('result');
   res.innerHTML = `
@@ -103,8 +103,17 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
     <div><strong>Маршрут:</strong> ${currentCountry === 'china' ? 'Китай' : 'Корея'}</div>
     <div><strong>Льгота:</strong> ${privilege === 'yes' ? 'да' : 'нет'}</div>
 
-    <div class="mt-4"><strong>Итоговая стоимость</strong> (авто + доставка + пошлина)</div>
-    <div>$${totalCostUSD.toFixed(2)} / €${totalCostEUR.toFixed(2)}</div>
+    <!-- ОТЛАДКА -->
+    <details class="mt-4 text-xs" open>
+      <summary class="cursor-pointer font-semibold">Отладка расчёта</summary>
+      <ul class="list-disc ml-5 mt-1 space-y-1">
+        <li>Курсы: USD→CNY=${USDCNY}, USD→KRW=${USDKRW}, USD→EUR=${USDEUR}</li>
+        <li>Цена авто: ${priceLocal} ${currency} = $${priceUSD.toFixed(2)}</li>
+        <li>Доставка: $${deliveryUSD}</li>
+        <li>Пошлина: €${dutyEUR.toFixed(2)} = $${dutyUSD.toFixed(2)}</li>
+        <li><strong>Итоговая (авто+доставка+пошлина):</strong> $${totalCostUSD.toFixed(2)}</li>
+      </ul>
+    </details>
 
     <div class="mt-4"><strong>Прогноз полной цены</strong> (включая все расходы)</div>
     <div>$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>
@@ -124,9 +133,9 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
 
 document.getElementById('calcMarginBtn').addEventListener('click', function () {
   const clientUSD = Number(document.getElementById('clientPriceInput').value);
-  const margin = clientUSD - window.lastTotalCostUSD;
+  const margin = clientUSD - lastTotalCostUSD;
   document.getElementById('marginResult').textContent = `Маржа: $${margin.toFixed(2)}`;
-  sendToGoogleSheets({...Object.fromEntries(new FormData(document.getElementById('calcForm'))), totalCostUSD: window.lastTotalCostUSD, clientPrice: clientUSD, margin});
+  sendToGoogleSheets({...Object.fromEntries(new FormData(document.getElementById('calcForm'))), totalCostUSD: lastTotalCostUSD, clientPrice: clientUSD, margin});
 });
 
 // ---------- Google Sheets ----------
