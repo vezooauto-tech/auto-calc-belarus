@@ -105,10 +105,11 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
     const insurance = priceEUR * 0.003;
     const extraUSD = (broker + storage + insurance) / USDEUR;
 
-// прогноз полной цены = цена клиента + ВСЕ доп расходы (если введена)
-const clientUSD = Number(document.getElementById('clientPriceInput').value) || 0;
-const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD; // все допы
-const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : totalCostUSD + extraTotalUSD;
+    // прогноз полной цены = цена клиента + ВСЕ доп расходы (если введена)
+    const clientUSD = Number(document.getElementById('clientPriceInput').value) || 0;
+    const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD; // все допы
+    const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : totalCostUSD + extraTotalUSD;
+    const fullCostEUR = fullCostUSD * USDEUR;
 
     lastTotalCostUSD = totalCostUSD;
     lastFullCostUSD = fullCostUSD;
@@ -129,10 +130,7 @@ const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : totalCostUSD + e
       <div class="text-xl font-bold">$${totalCostUSD.toFixed(2)} / €${totalCostEUR.toFixed(2)}</div>
     `;
 
-    // прогноз полной цены + чек-боксы
-    const fullBlock = document.getElementById('fullPriceBlock');
-    fullBlock.innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
-
+    // обновляем строки чек-боксов
     const checks = document.getElementById('expenseChecks');
     checks.innerHTML = `
       <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Утилизационный сбор: $${utilUSD.toFixed(2)}</label>
@@ -141,6 +139,10 @@ const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : totalCostUSD + e
       <label class="flex items-center gap-2"><input type="checkbox" checked disabled> СВХ: $${storage.toFixed(2)}</label>
       <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Страховка: $${(insurance / USDEUR).toFixed(2)}</label>
     `;
+
+    // прогноз полной цены
+    const fullBlock = document.getElementById('fullPriceBlock');
+    fullBlock.innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
 
     // показать блок и скролл
     const box = document.getElementById('resultBox');
@@ -160,7 +162,8 @@ document.getElementById('calcMarginBtn').addEventListener('click', function () {
     lastData.margin = margin;
     // обновляем прогноз полной цены
     const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
-    const fullCostUSD = clientUSD > 0 ? clientUSD : lastFullCostUSD;
+    const extraTotalUSD = (357 / USDEUR) + (120 / USDEUR) + (300 / USDEUR) + (200 / USDEUR) + (lastData.priceEUR * 0.003 / USDEUR);
+    const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : lastFullCostUSD;
     const fullCostEUR = fullCostUSD * USDEUR;
     document.getElementById('fullPriceBlock').innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
 });
