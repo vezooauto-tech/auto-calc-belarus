@@ -105,10 +105,10 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
     const insurance = priceEUR * 0.003;
     const extraUSD = (broker + storage + insurance) / USDEUR;
 
-    // прогноз полной цены
-    const clientUSD = Number(document.getElementById('clientPriceInput').value) || 0;
-    const fullCostUSD = clientUSD > 0 ? clientUSD : totalCostUSD + utilUSD + customsFeeUSD + extraUSD;
-    const fullCostEUR = fullCostUSD * USDEUR;
+// прогноз полной цены = цена клиента + ВСЕ доп расходы (если введена)
+const clientUSD = Number(document.getElementById('clientPriceInput').value) || 0;
+const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD; // все допы
+const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : totalCostUSD + extraTotalUSD;
 
     lastTotalCostUSD = totalCostUSD;
     lastFullCostUSD = fullCostUSD;
