@@ -5,7 +5,6 @@
   <title>Калькулятор авто из Китая и Кореи</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    /* мини-Tailwind */
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: #f3f4f6; color: #1f2937; margin: 0; }
     .max-w-3xl { max-width: 768px; margin: auto; padding: 1.5rem; }
     .text-2xl { font-size: 1.5rem; font-weight: 700; }
@@ -43,7 +42,7 @@
     .grid { display: grid; }
     .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
     .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .md\:grid-cols-2 { @media (min-width: 768px) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .hidden { display: none; }
     .w-full { width: 100%; }
     .w-48 { width: 12rem; }
@@ -111,7 +110,7 @@
           </select>
         </label>
       </div>
-      <label>Ссылка на авто <input name="autoURL" type="url" required class="input" placeholder="https://..."></label>
+      <label>Ссылка на авто (необязательно) <input name="autoURL" type="url" class="input" placeholder="https://..."></label>
       <label>Комментарий (необязательно)
         <textarea name="comment" class="input" rows="2" placeholder="Состояние, опции, примечания"></textarea>
       </label>
@@ -135,11 +134,17 @@
       <!-- Прогноз полной цены с чек-боксами -->
       <div class="mt-4">
         <h3 class="font-semibold">Прогноз полной цены со всеми расходами</h3>
-        <div id="fullPriceBlock"></div>
+        <div id="fullPriceBlock" class="text-xl font-bold mt-1"></div>
         <details class="mt-2 text-xs">
           <summary class="cursor-pointer">Расшифровка расходов (чек-боксы)</summary>
           <div id="expenseChecks" class="space-y-1 mt-1"></div>
         </details>
+      </div>
+
+      <!-- КНОПКА ОТПРАВКИ (только после всех расчетов) -->
+      <div class="mt-6 text-center">
+        <button id="sendSheetBtn" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900">Отправить в таблицу</button>
+        <div id="sendResult" class="mt-2 text-sm text-green-600 hidden">Отправлено!</div>
       </div>
     </div>
   </div>
