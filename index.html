@@ -31,6 +31,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <label>Название и цвет авто <input name="name" required class="input" placeholder="Toyota Camry, белый"></label>
         <label>Год <input type="number" name="year" required class="input"></label>
+        <label>Валюта
+  <select name="currency" class="input">
+    <option value="CNY">Китай (CNY)</option>
+    <option value="KRW">Корея (KRW)</option>
+  </select>
+</label>
         <label>Цена (<span id="currencyLabel">юань</span>) <input type="number" name="priceLocal" required class="input"></label>
         <label>Объём (см³) <input type="number" name="volume" required class="input"></label>
         <label>Тип двигателя
