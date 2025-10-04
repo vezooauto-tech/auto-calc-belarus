@@ -153,18 +153,22 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
     lastData = { ...d, totalCostUSD, fullCostUSD, totalCostEUR, fullCostEUR };
 });
 
-// ---------- маржа ----------
+// ---------- маржа + обновление прогноза ----------
 document.getElementById('calcMarginBtn').addEventListener('click', function () {
-    const clientUSD = Number(document.getElementById('clientPriceInput').value);
+    const clientUSD = Number(document.getElementById('clientPriceInput').value) || 0;
     const margin = clientUSD - lastTotalCostUSD;
     document.getElementById('marginResult').textContent = `Маржа: $${margin.toFixed(2)}`;
+
+    // обновляем прогноз: цена клиента + все допы + маржа
+    const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
+    const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD; // все допы
+    const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD + margin : lastTotalCostUSD + extraTotalUSD;
+    const fullCostEUR = fullCostUSD * USDEUR;
+
     lastData.clientPrice = clientUSD;
     lastData.margin = margin;
-    // обновляем прогноз полной цены
-    const USDEUR = parseFloat(document.getElementById('rateUSDEUR')?.value || defRates.USDEUR);
-   const extraTotalUSD = utilUSD + customsFeeUSD + extraUSD;
-    const fullCostUSD = clientUSD > 0 ? clientUSD + extraTotalUSD : lastFullCostUSD;
-    const fullCostEUR = fullCostUSD * USDEUR;
+
+    // обновляем блок прогноза
     document.getElementById('fullPriceBlock').innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
 });
 
