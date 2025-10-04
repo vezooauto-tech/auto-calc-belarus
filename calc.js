@@ -1,4 +1,4 @@
-// Курсы по умолчанию (можно менять в браузере)
+// Курсы по умолчанию
 const defRates = {
   USDCNY: 7.27,
   USDKRW: 1975,
@@ -7,6 +7,7 @@ const defRates = {
 
 let currentCountry = 'china';
 let lastTotalCostUSD = 0;
+let lastFullCostUSD = 0; // для чек-боксов
 
 // ---------- страна ----------
 function updateCountryUI(country) {
@@ -40,7 +41,7 @@ function calcDutyEUR(age, volume, engine, privilege) {
   return privilege === 'yes' ? duty / 2 : duty;
 }
 
-// ---------- основной расчёт + ОТЛАДКА ----------
+// ---------- основной расчёт + скролл ----------
 document.getElementById('calcForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(e.target));
@@ -89,9 +90,9 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const fullCostEUR = fullCostUSD * USDEUR;
 
   lastTotalCostUSD = totalCostUSD;
+  lastFullCostUSD = fullCostUSD;
 
-  // ОТЛАДКА: выводим всё на экран
-  const box = document.getElementById('resultBox');
+  // заполняем блоки
   const res = document.getElementById('result');
   res.innerHTML = `
     <div><strong>Название и цвет:</strong> ${d.name}</div>
@@ -103,34 +104,39 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
     <div><strong>Маршрут:</strong> ${currentCountry === 'china' ? 'Китай' : 'Корея'}</div>
     <div><strong>Льгота:</strong> ${privilege === 'yes' ? 'да' : 'нет'}</div>
 
-    <!-- ОТЛАДКА -->
-    <details class="mt-4 text-xs" open>
-      <summary class="cursor-pointer font-semibold">Отладка расчёта</summary>
-      <ul class="list-disc ml-5 mt-1 space-y-1">
-        <li>Курсы: USD→CNY=${USDCNY}, USD→KRW=${USDKRW}, USD→EUR=${USDEUR}</li>
-        <li>Цена авто: ${priceLocal} ${currency} = $${priceUSD.toFixed(2)}</li>
-        <li>Доставка: $${deliveryUSD}</li>
-        <li>Пошлина: €${dutyEUR.toFixed(2)} = $${dutyUSD.toFixed(2)}</li>
-        <li><strong>Итоговая (авто+доставка+пошлина):</strong> $${totalCostUSD.toFixed(2)}</li>
-      </ul>
-    </details>
+    <div class="mt-4"><strong>Итоговая стоимость</strong> (авто + доставка + пошлина)</div>
+    <div class="text-xl font-bold">$${totalCostUSD.toFixed(2)} / €${totalCostEUR.toFixed(2)}</div>
 
-    <div class="mt-4"><strong>Прогноз полной цены</strong> (включая все расходы)</div>
-    <div>$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>
-    <details class="mt-2 text-xs">
-      <summary class="cursor-pointer">Расшифровка расходов</summary>
-      <ul class="list-disc ml-5 mt-1">
-        <li>Утилизационный сбор: $${utilUSD.toFixed(2)}</li>
-        <li>Таможенный сбор: $${customsFeeUSD.toFixed(2)}</li>
-        <li>Брокер: $${broker.toFixed(2)}</li>
-        <li>СВХ: $${storage.toFixed(2)}</li>
-        <li>Страховка: $${(insurance / USDEUR).toFixed(2)}</li>
-      </ul>
-    </details>
+    <!-- Маржа сразу -->
+    <div class="mt-4">
+      <label class="text-sm font-medium">Цена для клиента (USD):
+        <input type="number" id="clientPriceInput" class="input w-48">
+      </label>
+      <button id="calcMarginBtn" class="ml-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Посчитать маржу</button>
+      <div id="marginResult" class="mt-2 font-semibold"></div>
+    </div>
   `;
+
+  // прогноз полной цены + чек-боксы
+  const fullBlock = document.getElementById('fullPriceBlock');
+  fullBlock.innerHTML = `<div class="text-xl font-bold">$${fullCostUSD.toFixed(2)} / €${fullCostEUR.toFixed(2)}</div>`;
+
+  const checks = document.getElementById('expenseChecks');
+  checks.innerHTML = `
+    <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Утилизационный сбор: $${utilUSD.toFixed(2)}</label>
+    <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Таможенный сбор: $${customsFeeUSD.toFixed(2)}</label>
+    <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Брокер: $${broker.toFixed(2)}</label>
+    <label class="flex items-center gap-2"><input type="checkbox" checked disabled> СВХ: $${storage.toFixed(2)}</label>
+    <label class="flex items-center gap-2"><input type="checkbox" checked disabled> Страховка: $${(insurance / USDEUR).toFixed(2)}</label>
+  `;
+
+  // показать блок и скролл
+  const box = document.getElementById('resultBox');
   box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
+// ---------- маржа ----------
 document.getElementById('calcMarginBtn').addEventListener('click', function () {
   const clientUSD = Number(document.getElementById('clientPriceInput').value);
   const margin = clientUSD - lastTotalCostUSD;
