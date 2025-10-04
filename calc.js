@@ -7,7 +7,8 @@ const defRates = {
 
 let currentCountry = 'china';
 let lastTotalCostUSD = 0;
-let lastFullCostUSD = 0; // для чек-боксов
+let lastFullCostUSD = 0;
+let lastData = {}; // храним данные для отправки
 
 // ---------- страна ----------
 function updateCountryUI(country) {
@@ -106,15 +107,6 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
 
     <div class="mt-4"><strong>Итоговая стоимость</strong> (авто + доставка + пошлина)</div>
     <div class="text-xl font-bold">$${totalCostUSD.toFixed(2)} / €${totalCostEUR.toFixed(2)}</div>
-
-    <!-- Маржа сразу -->
-    <div class="mt-4">
-      <label class="text-sm font-medium">Цена для клиента (USD):
-        <input type="number" id="clientPriceInput" class="input w-48">
-      </label>
-      <button id="calcMarginBtn" class="ml-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Посчитать маржу</button>
-      <div id="marginResult" class="mt-2 font-semibold"></div>
-    </div>
   `;
 
   // прогноз полной цены + чек-боксы
@@ -134,6 +126,9 @@ document.getElementById('calcForm').addEventListener('submit', function (e) {
   const box = document.getElementById('resultBox');
   box.classList.remove('hidden');
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // сохраняем данные для отправки
+  lastData = { ...d, totalCostUSD, fullCostUSD, totalCostEUR, fullCostEUR };
 });
 
 // ---------- маржа ----------
@@ -141,17 +136,26 @@ document.getElementById('calcMarginBtn').addEventListener('click', function () {
   const clientUSD = Number(document.getElementById('clientPriceInput').value);
   const margin = clientUSD - lastTotalCostUSD;
   document.getElementById('marginResult').textContent = `Маржа: $${margin.toFixed(2)}`;
-  sendToGoogleSheets({...Object.fromEntries(new FormData(document.getElementById('calcForm'))), totalCostUSD: lastTotalCostUSD, clientPrice: clientUSD, margin});
+  lastData.clientPrice = clientUSD;
+  lastData.margin = margin;
 });
 
-// ---------- Google Sheets ----------
-function sendToGoogleSheets(data) {
-  const sheetURL = currentCountry === 'china'
+// ---------- ОТПРАВКА в таблицу (только по кнопке) ----------
+document.getElementById('sendSheetBtn').addEventListener('click', function () {
+  if (!lastData.totalCostUSD) { alert('Сначала рассчитайте стоимость'); return; }
+
+  const sheetURL = lastData.route === 'china'
     ? 'https://script.google.com/macros/s/AKfycb.../exec' // ← вставь свой Китай
     : 'https://script.google.com/macros/s/AKfycb.../exec'; // ← вставь свой Корея
+
   fetch(sheetURL, {
     method: 'POST',
-    body: JSON.stringify(data),
-    headers: {'Content-Type': 'application/json'}
-  });
-}
+    body: JSON.stringify(lastData),
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then(() => {
+      document.getElementById('sendResult').classList.remove('hidden');
+      document.getElementById('sendSheetBtn').disabled = true;
+    })
+    .catch(() => alert('Ошибка отправки'));
+});
